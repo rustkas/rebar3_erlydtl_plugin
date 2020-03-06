@@ -185,7 +185,7 @@ default(compiler_options) -> [debug_info, return];
 default(recursive) -> true.
 
 compile_dtl(_, Source, Target, DtlOpts, Dir, OutDir) ->
-    case needs_compile(Source, Target, DtlOpts) of
+    case needs_compile(Source, Target) of
         true ->
             do_compile(Source, Target, DtlOpts, Dir, OutDir);
         false ->
@@ -223,43 +223,7 @@ do_compile(Source, Target, DtlOpts, Dir, OutDir) ->
 module_name(Target) ->
     filename:rootname(filename:basename(Target), ".beam").
 
-needs_compile(Source, Target, DtlOpts) ->
+needs_compile(Source, Target) ->
     LM = filelib:last_modified(Target),
-    LM < filelib:last_modified(Source) orelse
-        lists:any(fun(D) -> LM < filelib:last_modified(D) end,
-                  referenced_dtls(Source, DtlOpts)).
+    LM < filelib:last_modified(Source).
 
-referenced_dtls(Source, DtlOpts) ->
-    DtlOpts1 = lists:keyreplace(doc_root, 1, DtlOpts,
-        {doc_root, filename:dirname(Source)}),
-    Set = referenced_dtls1([Source], DtlOpts1,
-                           sets:add_element(Source, sets:new())),
-    sets:to_list(sets:del_element(Source, Set)).
-
-referenced_dtls1(Step, DtlOpts, Seen) ->
-    ExtMatch = re:replace(option(source_ext, DtlOpts), "\.", "\\\\\\\\.",
-                          [{return, list}]),
-
-    ShOpts = [{use_stdout, false}, return_on_error],
-    AllRefs =
-        lists:append(
-          [begin
-               Cmd = lists:flatten(["grep -o [^\\\"]*\\",
-                                    ExtMatch, "[^\\\"]* ", F]),
-               case rebar_utils:sh(Cmd, ShOpts) of
-                   {ok, Res} ->
-                       string:tokens(Res, "\n");
-                   {error, _} ->
-                       ""
-               end
-           end || F <- Step]),
-    DocRoot = option(doc_root, DtlOpts),
-    WithPaths = [ filename:join([DocRoot, F]) || F <- AllRefs ],
-    rebar_api:debug("All deps: ~p\n", [WithPaths]),
-    Existing = [F || F <- WithPaths, filelib:is_regular(F)],
-    New = sets:subtract(sets:from_list(Existing), Seen),
-    case sets:size(New) of
-        0 -> Seen;
-        _ -> referenced_dtls1(sets:to_list(New), DtlOpts,
-                              sets:union(New, Seen))
-    end.
