@@ -1,6 +1,6 @@
 {application, rebar3_erlydtl_plugin,
- [{description, "A rebar plugin"}
- ,{vsn, "0.2.0"}
+ [{description, "A rebar3 erlydtl plugin"}
+ ,{vsn, "0.1.0"}
  ,{registered, []}
  ,{applications, [kernel, stdlib, erlydtl]}
  ,{env,[]}
@@ -8,5 +8,5 @@
 
  ,{contributors, ["Tristan Sloughter"]}
  ,{licenses, ["MIT"]}
- ,{links, [{"Github", "https://github.com/tsloughter/rebar3_erlydtl_plugin"}]}
+ ,{links, [{"Github", "https://github.com/zwilias/rebar3_erlydtl_plugin"}]}
  ]}.
