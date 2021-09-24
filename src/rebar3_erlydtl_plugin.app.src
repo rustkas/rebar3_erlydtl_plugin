@@ -1,6 +1,6 @@
 {application, rebar3_erlydtl_plugin,
  [{description, "A rebar3 erlydtl plugin"}
- ,{vsn, "0.1.0"}
+ ,{vsn, "0.1.1"}
  ,{registered, []}
  ,{applications, [kernel, stdlib, erlydtl]}
  ,{env,[]}
